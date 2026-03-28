@@ -1,137 +1,133 @@
-# Python Algorithmic Trading Bot for MetaTrader 4
 
-This project provides a robust, modular, and production-ready framework for developing and running automated trading strategies in Python, connected to the MetaTrader 4 (MT4) terminal. It uses a file-based communication bridge to send commands to and receive data from MT4, allowing for complex strategies to be developed and executed with the power of Python's scientific and data analysis libraries.
+# Bot de Trading Algorítmico en Python para MetaTrader 4
 
-The architecture is designed for rapid strategy development and safe, unattended operation, separating core trading logic from the complexities of data management, risk control, and broker communication.
+Este proyecto proporciona un framework robusto, modular y listo para producción para desarrollar y ejecutar estrategias de trading automatizadas en Python, conectado al terminal de MetaTrader 4 (MT4). Utiliza un puente de comunicación basado en archivos para enviar comandos y recibir datos de MT4, lo que permite desarrollar y ejecutar estrategias complejas con la potencia de las bibliotecas científicas y de análisis de datos de Python.
 
-## Key Features
+La arquitectura está diseñada para un desarrollo rápido de estrategias y una operación segura y sin supervisión, separando la lógica central de trading de las complejidades de la gestión de datos, el control de riesgo y la comunicación con el bróker.
 
-- **Modular Architecture**: Clean separation of concerns between the connection client, trade manager, event handler, and the strategies themselves.
-- **Dynamic "Plug-and-Play" Strategies**: A strategy factory allows you to activate any strategy just by changing its name in `main.py`. No more `if/elif` blocks or manual imports.
-- **Advanced Risk Management**: A centralized `TradeManager` that handles sophisticated, percentage-based risk rules:
-  - Dynamic position sizing based on account risk percentage.
-  - Percentage-based Stop Loss and Take Profit.
-  - Percentage-based Trailing Stop Loss.
-  - Configurable multi-stage Partial Take Profits.
-- **Broker-Aware Execution**: The bot dynamically queries the broker for instrument-specific rules (`stoplevel`, `lot_step`, `min/max_lot`) to ensure all trades are compliant and prevent rejections.
-- **State Persistence**: The bot saves its trade management state (e.g., which partial profits have been taken) to a file, ensuring it can be stopped and restarted without making duplicate decisions.
-- **Production-Ready Reliability**:
-  - **Persistent Logging**: All actions and decisions are logged to a rotating file for easy debugging and auditing.
-  - **Two-Way Heartbeat**: A mechanism that allows the MT4 Expert Advisor and the Python script to monitor each other. If the Python script crashes, the EA can safely close all open trades.
-  - **Data Integrity Checks**: The system automatically detects and handles corrupted data (bad candles) and warns about potential gaps in the data stream.
-- **Configuration Driven**: All key parameters—from broker paths to strategy settings and risk rules—are managed in a central `config.py` file for easy tuning.
+## Características Principales
 
-## Project Structure
+*   **Arquitectura Modular:** Separación clara de responsabilidades entre el cliente de conexión, el gestor de trades, el manejador de eventos y las propias estrategias.
+*   **Estrategias Dinámicas "Plug-and-Play":** Una fábrica de estrategias te permite activar cualquier estrategia simplemente cambiando su nombre en `main.py`. No más bloques `if/elif` o importaciones manuales.
+*   **Gestión de Riesgo Avanzada:** Un `TradeManager` centralizado que maneja reglas de riesgo sofisticadas basadas en porcentajes:
+    *   Dimensionamiento dinámico de posiciones basado en el porcentaje de riesgo de la cuenta.
+    *   Stop Loss y Take Profit basados en porcentajes.
+    *   Trailing Stop Loss basado en porcentajes.
+    *   Toma de Beneficios Parciales (Partial Take Profits) en múltiples etapas configurable.
+*   **Ejecución Consciente del Bróker:** El bot consulta dinámicamente al bróker las reglas específicas del instrumento (stoplevel, lot_step, min/max_lot) para asegurar que todas las órdenes cumplan las normas y evitar rechazos.
+*   **Persistencia de Estado:** El bot guarda su estado de gestión de trades (por ejemplo, qué beneficios parciales se han tomado) en un archivo, lo que permite detenerlo y reiniciarlo sin tomar decisiones duplicadas.
+*   **Fiabilidad Lista para Producción:**
+    *   **Registro Persistente (Logging):** Todas las acciones y decisiones se registran en un archivo rotatorio para facilitar la depuración y auditoría.
+    *   **Heartbeat Bidireccional:** Un mecanismo que permite al Asesor Experto (EA) de MT4 y al script de Python monitorearse mutuamente. Si el script de Python falla, el EA puede cerrar de forma segura todas las operaciones abiertas.
+    *   **Verificaciones de Integridad de Datos:** El sistema detecta y maneja automáticamente datos corruptos (velas incorrectas) y advierte sobre posibles brechas en el flujo de datos.
+*   **Configuración Impulsada:** Todos los parámetros clave, desde las rutas del bróker hasta la configuración de estrategias y reglas de riesgo, se gestionan en un archivo `config.py` central para un ajuste sencillo.
+
+## Estructura del Proyecto
 
 ```
+
 your_trading_bot/
-├── main.py                  # Main entry point: Initializes and runs the bot.
-├── config.py                # All settings, parameters, and credentials.
-├── logger_setup.py          # Configures persistent file and console logging.
+├── main.py                  # Punto de entrada principal: Inicializa y ejecuta el bot.
+├── config.py                # Todas las configuraciones, parámetros y credenciales.
+├── logger_setup.py          # Configura el registro persistente en archivo y consola.
 ├── api/
-│   └── dwx_client.py        # The client library for MT4 communication.
-├── event_handler.py         # Routes events from the client to the TradeManager.
-├── trade_manager.py         # The engine: Manages data, state, risk, and execution.
+│   └── dwx_client.py        # La biblioteca cliente para la comunicación con MT4.
+├── event_handler.py         # Enruta eventos desde el cliente al TradeManager.
+├── trade_manager.py         # El motor: Gestiona datos, estado, riesgo y ejecución.
 ├── utils/
-│   └── risk_manager.py      # Contains pure risk calculation functions.
+│   └── risk_manager.py      # Contiene funciones puras de cálculo de riesgo.
 └── strategies/
-    ├── __init__.py
-    ├── base_strategy.py     # Defines the interface that all strategies must follow.
-    └── sma_crossover.py     # An example self-contained strategy file.
+├── init.py
+├── base_strategy.py     # Define la interfaz que deben seguir todas las estrategias.
+└── sma_crossover.py     # Un archivo de estrategia autocontenida de ejemplo.
+
 ```
 
-## Prerequisites
+## Requisitos Previos
 
-1.  **MetaTrader 4 Terminal**: You must have an MT4 terminal installed.
-2.  **Python**: Python 3.8 or newer.
-3.  **Required MQL4 Expert Advisor**: The enhanced `DWX_server_MT4.mq4` Expert Advisor from this repository must be placed in your MT4 terminal's `MQL4/Experts` directory.
-4.  **Python Libraries**:
+*   **Terminal de MetaTrader 4:** Debes tener un terminal de MT4 instalado.
+*   **Python:** Python 3.8 o superior.
+*   **Asesor Experto (EA) MQL4 requerido:** El Asesor Experto mejorado `DWX_server_MT4.mq4` de este repositorio debe colocarse en el directorio `MQL4/Experts` de tu terminal MT4.
+*   **Bibliotecas de Python:**
     ```bash
     pip install pandas
     ```
 
-## Setup and Configuration
+## Configuración e Instalación
 
-### Step 1: Configure MetaTrader 4
+### Paso 1: Configurar MetaTrader 4
 
-1.  **Install the Expert Advisor**:
+1.  **Instalar el Asesor Experto:**
+    *   Abre tu terminal MT4, ve a `Archivo -> Abrir Carpeta de Datos`.
+    *   Navega a la carpeta `MQL4/Experts` y copia el archivo `DWX_server_MT4.mq4` dentro de ella.
+    *   En MT4, haz clic derecho en "Asesores Expertos" en el Navegador y selecciona "Actualizar".
 
-    - Open your MT4 terminal, go to `File` -> `Open Data Folder`.
-    - Navigate to the `MQL4/Experts` folder and copy the `DWX_server_MT4.mq4` file into it.
-    - In MT4, right-click "Expert Advisors" in the Navigator and select "Refresh".
+2.  **Habilitar AutoTrading y DLLs:**
+    *   En la barra de herramientas de MT4, haz clic en el botón "AutoTrading" hasta que se ponga verde.
+    *   Ve a `Herramientas -> Opciones` y selecciona la pestaña `Asesores Expertos`.
+    *   Marca "Permitir operaciones automatizadas".
+    *   Marca "Permitir importación de DLL".
 
-2.  **Enable AutoTrading & DLLs**:
+3.  **Adjuntar y Configurar el EA:**
+    *   Abre un gráfico para el símbolo y el marco de tiempo que deseas operar (por ejemplo, EURUSD, M15).
+    *   Arrastra el EA `DWX_server_MT4` desde el Navegador hasta el gráfico.
+    *   En la pestaña `Entradas` de las propiedades del EA, es fundamental actualizar la configuración predeterminada:
+        *   `MaximumLotSize`: Establece un valor alto, como `100.0`, para darle el control a Python.
+        *   `MaximumOrders`: Establece un valor alto, como `20`.
+        *   `SlippagePoints`: Auméntalo a `30` o `50` para instrumentos volátiles.
+        *   `MILLISECOND_TIMER`: Auméntalo a `500` para reducir la carga de la CPU.
+    *   Asegúrate de que la opción "Permitir operaciones en vivo" esté marcada en la pestaña `Común`. Deberías ver una carita sonriente en el gráfico.
 
-    - In the MT4 toolbar, click the **"AutoTrading"** button so it turns green.
-    - Go to `Tools` -> `Options` -> `Expert Advisors` tab.
-    - Check **"Allow automated trading"**.
-    - Check **"Allow DLL imports"**.
+### Paso 2: Configurar el Proyecto de Python
 
-3.  **Attach and Configure the EA**:
-    - Open a chart for the symbol and timeframe you wish to trade (e.g., `EURUSD, M15`).
-    - Drag the `DWX_server_MT4` EA from the Navigator onto the chart.
-    - In the `Inputs` tab of the EA's properties, **it is critical to update the default settings**:
-      - `MaximumLotSize`: Set to a high value like `100.0` to give control to Python.
-      - `MaximumOrders`: Set to a high value like `20`.
-      - `SlippagePoints`: Increase to `30` or `50` for volatile instruments.
-      - `MILLISECOND_TIMER`: Increase to `500` to reduce CPU load.
-    - Ensure "Allow live trading" is checked in the `Common` tab. You should see a smiley face on the chart.
-
-### Step 2: Configure the Python Project
-
-1.  **Clone the Repository**:
-
+1.  **Clonar el Repositorio:**
     ```bash
     git clone https://github.com/Anu-bhav/mt4_trading_bot
     cd mt4_trading_bot
     ```
 
-2.  **Edit `config.py`**:
-    - **`METATRADER_DIR_PATH`**: Set this to the **full path of your MT4 Data Folder**.
-    - **Strategy Settings**: Adjust `STRATEGY_SYMBOL`, `STRATEGY_TIMEFRAME`, and parameters in `STRATEGY_PARAMS`.
-    - **Risk Settings**: Configure your desired rules in the `RISK_CONFIG` dictionary.
+2.  **Editar `config.py`:**
+    *   `METATRADER_DIR_PATH`: Establece esta ruta a la ruta completa de la Carpeta de Datos de tu MT4.
+    *   **Configuración de la Estrategia:** Ajusta `STRATEGY_SYMBOL`, `STRATEGY_TIMEFRAME` y los parámetros en `STRATEGY_PARAMS`.
+    *   **Configuración de Riesgo:** Configura tus reglas deseadas en el diccionario `RISK_CONFIG`.
 
-## How to Run the Bot
+## Cómo Ejecutar el Bot
 
-Once both MT4 and Python are configured, simply run the main script from your terminal:
+Una vez que tanto MT4 como Python estén configurados, simplemente ejecuta el script principal desde tu terminal:
 
 ```bash
 python main.py
 ```
 
-All output will be printed to the console and simultaneously saved to `trading_bot.log` for a permanent record.
+Toda la salida se imprimirá en la consola y se guardará simultáneamente en trading_bot.log para un registro permanente.
 
-## How to Create a New Strategy
+Cómo Crear una Nueva Estrategia
 
-Thanks to the dynamic strategy factory, adding new strategies is incredibly simple:
+Gracias a la fábrica de estrategias dinámica, añadir nuevas estrategias es increíblemente sencillo:
 
-1.  **Define Parameters in `config.py`**: Add a new key and dictionary for your strategy inside `STRATEGY_PARAMS`.
+1. Definir Parámetros en config.py: Añade una nueva clave y un diccionario para tu estrategia dentro de STRATEGY_PARAMS.
+   ```python
+   'mi_nueva_estrategia': { 'lookback': 50, 'threshold': 3.14 }
+   ```
+2. Crear el Archivo de la Estrategia:
+   · En la carpeta strategies/, crea un archivo llamado mi_nueva_estrategia.py.
+   · Dentro, crea una clase llamada MiNuevaEstrategia que herede de BaseStrategy.
+   · Implementa los métodos __init__, get_signal y reset.
+3. Activar la Estrategia en main.py:
+   · Cambia una sola línea en main.py:
+   ```python
+   strategy_name_to_run = "mi_nueva_estrategia"
+   ```
+   ¡Eso es todo! La fábrica se encarga del resto.
 
-    ```python
-    'my_new_strategy': { 'lookback': 50, 'threshold': 3.14 }
-    ```
+Agradecimientos
 
-2.  **Create the Strategy File**:
+La capa de comunicación central de este proyecto se basa en el trabajo fundamental del equipo de Darwinex Labs y su proyecto de código abierto dwxconnect.
 
-    - In the `strategies/` folder, create a file named `my_new_strategy.py`.
-    - Inside, create a class named `MyNewStrategy` that inherits from `BaseStrategy`.
-    - Implement your `__init__`, `get_signal`, and `reset` methods.
+El Asesor Experto DWX_server_MT4.mq4 y el cliente de Python (api/dwx_client.py) están basados en su biblioteca original. Los hemos extendido para incluir datos más ricos, cierres controlados (a través de un método stop()), y un mecanismo de heartbeat bidireccional para una fiabilidad mejorada.
 
-3.  **Activate the Strategy in `main.py`**:
-    - Change **one single line** in `main.py`:
-    ```python
-    strategy_name_to_run = "my_new_strategy"
-    ```
+Estamos inmensamente agradecidos por su decisión de liberar estas herramientas esenciales como código abierto.
 
-That's it! The factory handles the rest.
+El repositorio original se puede encontrar en: darwinex/dwxconnect en GitHub.
 
-## Acknowledgements
-
-This project's core communication layer is built upon the foundational work of the **Darwinex Labs** team and their open-source **`dwxconnect`** project.
-
-- The **`DWX_server_MT4.mq4`** Expert Advisor and Python client (`api/dwx_client.py`) are based on their original library. We have extended them to include richer data, graceful shutdowns (via a `stop()` method), and a two-way heartbeat mechanism for enhanced reliability.
-
-We are immensely grateful for their decision to open-source these essential tools.
-
-The original repository can be found at:
-**[darwinex/dwxconnect on GitHub](https://github.com/darwinex/dwxconnect)**
+```
